@@ -2,24 +2,28 @@ import React from 'react'
 import Map, {Marker, Popup} from 'react-map-gl';
 import { useState } from 'react';
 import getCenter from 'geolib/es/getCenter'
+import Image from 'next/image';
+import { LocationMarkerIcon } from '@heroicons/react/solid';
+import "mapbox-gl/dist/mapbox-gl.css";
 
 
 
 function GpsMap({ searchResults }) {
-  const [selectedLocation, setSelectedLocation] = useState({})
+  const [selectedLocation, setSelectedLocation] = React.useState({});
   
-  const coordinates = searchResults.map((results) => ({
-    longitude: results.long,
-    latitude: results.lat,
+  const coordinates = searchResults.map((result) => ({
+    longitude: result.long,
+    latitude: result.lat,
   }));
 
   const center = getCenter(coordinates);
+  console.log(selectedLocation)
 
   const [viewport, setViewport] = useState({
     width: '100%',
     height: '100%',
     longitude: center.longitude,
-    latitude: center.latitude,
+    latitude: (center.latitude-.15),
     zoom: 11,
   });
 
@@ -31,40 +35,39 @@ function GpsMap({ searchResults }) {
     onMove={evt => setViewport(evt.viewport)}
    >
 
-     {searchResults.map((result) => (
-       <div key={result.long}>
+     {searchResults.map(({ lat, long, title, img, price, star, location }) => (
+       <div key={lat} >
          <Marker
-          longitude={result.long}
-          latitude={result.lat}
-          anchor="center"
-          offsetLeft={-20}
-          offsetTop={-10}
+          longitude={long}
+          latitude={lat}
+          offsetTop={'-10px'}
+          offsetLeft={'-20px'}
          >
-           <span
-            role="img"
-            className='cursor-pointer text-4xl animate-bounce'
-            onClick={() => setSelectedLocation(result)}
-            aria-label="push-pin"
-           >
-            📌 
-           </span>
-         </Marker>
+         
+          <LocationMarkerIcon 
+              className="h-8 text-red-500 cursor-pointer animate-bounce"
+              onClick={() => setSelectedLocation({lat, long})} 
+              aria-label="push-pin"
+          />
+          </Marker>
 
-         {selectedLocation.long === result.long ? (
+         {/* This popup that should show if we click on a Marker */}
+
+         {selectedLocation.lat && 
           <Popup
             onClose={() => setSelectedLocation({})}
-            closeOnClick={true}
-            latitude={result.lat}
-            longitude={result.long}
+            closeOnClick
+            latitude={lat}
+            longitude={long}
+            className="z-50  rounded-xl"
             >
-            {result.title}
+            {title}
           </Popup>
-         ) : (
-           false
-          )}
-       </div>
+         
+          }
+           {console.log(lat)}
+        </div>
      ))}
-
    </Map>
   )
 }
